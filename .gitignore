@@ -1,0 +1,28 @@
+# Dependencies & Large Binaries
+chrome/
+llama/
+
+# Executables & Dynamic Libraries
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Model Weights
+*.gguf
+*.bin
+*.pt
+*.safetensors
+
+# Archives & Packages
+*.zip
+*.tar
+*.tar.gz
+*.7z
+*.rar
+
+# OS & Editor Files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

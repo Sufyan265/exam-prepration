@@ -1,0 +1,40 @@
+<!-- Change these keys in .seb file to allow chrome in exam -->
+
+<key>showTaskBar</key><true/>
+<key>taskBarHeight</key><integer>40</integer>
+<key>createNewDesktop</key><true/>
+<key>killExplorerShell</key><false/>
+<key>enableAltTab</key><true/>
+<key>allowSwitchToApplications</key><true/>
+<key>allowUserSwitching</key><true/>
+
+<key>permittedProcesses</key>
+<array>
+  <dict>
+    <key>active</key><true/>
+    <key>allowUserToChooseApp</key><true/>
+    <key>autostart</key><false/>
+    <key>description</key><string>Chrome</string>
+    <key>executable</key><string>chrome.exe</string>
+    <key>iconInTaskbar</key><true/>
+    <key>os</key><integer>1</integer>
+    <key>path</key><string>C:\Program Files\Google\Chrome\Application\chrome.exe</string>
+    <key>runInBackground</key><false/>
+    <key>strongKill</key><false/>
+    <key>title</key><string>Chrome</string>
+  </dict>
+</array>
+
+<key>allowQuit</key><true/>
+<key>ignoreQuitPassword</key><true/>
+<key>enablePrivateClipboard</key><false/>
+<key>enableRightMouse</key><true/>
+<key>enableEsc</key><true/>
+<key>enableF3</key><true/>
+<key>enablePrintScreen</key><true/>
+<key>enableBrowserWindowToolbar</key><true/>
+<key>showReloadButton</key><true/>
+<key>URLFilterEnable</key><false/>
+<key>browserViewMode</key><integer>0</integer>
+<key>newBrowserWindowByLinkPolicy</key><integer>2</integer>
+<key>allowDownUploads</key><true/>

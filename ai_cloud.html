@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Prepration</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font:13px/1.45 "Segoe UI",Arial,sans-serif;background:#f8fafc;color:#1e293b;
+     display:flex;flex-direction:column;height:100vh}
+header{display:flex;gap:6px;padding:6px;background:#ffffff;border-bottom:1px solid #e2e8f0;flex-wrap:wrap;align-items:center}
+input,select,textarea,button{font:inherit;border-radius:4px;border:1px solid #cbd5e1}
+input,select{background:#ffffff;color:#0f172a;padding:4px 6px}
+input:focus,select:focus,textarea:focus{border-color:#3b82f6;outline:none}
+#source{background:#eff6ff;color:#1d4ed8;font-weight:600;border-color:#93c5fd}
+#key{flex:1;min-width:130px}
+#local-url{flex:1;min-width:180px}
+#answer{flex:0 0 auto;padding:10px;background:#f0fdf4;border-bottom:1px solid #cbd5e1;white-space:pre-wrap;
+        font-size:15px;min-height:64px;max-height:38vh;overflow:auto;color:#166534}
+#answer b{color:#14532d;font-size:19px}
+#hist{font-size:11px;color:#64748b;max-height:60px;overflow:auto;padding:0 8px;background:#f8fafc;border-bottom:1px solid #f1f5f9}
+#q{flex:1;background:#ffffff;color:#0f172a;padding:8px;resize:none;border:0;border-top:1px solid #e2e8f0}
+footer{display:flex;gap:6px;padding:6px;background:#ffffff;border-top:1px solid #e2e8f0;align-items:center;flex-wrap:wrap}
+button{background:#2563eb;color:#ffffff;padding:5px 10px;cursor:pointer;border:0;border-radius:4px}
+button:hover{background:#1d4ed8}
+button.g{background:#f1f5f9;color:#334155;border:1px solid #cbd5e1}
+button.g:hover{background:#e2e8f0}
+#meta{margin-left:auto;color:#64748b;font-size:11px}
+#pip-placeholder{flex:1;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#64748b;padding:20px;text-align:center}
+#pip-placeholder.active{display:flex}
+#pip-placeholder .pip-title{font-size:15px;color:#0f172a;font-weight:600}
+</style>
+</head>
+<body>
+<header>
+  <select id="source" title="AI Backend Source">
+    <option value="gemini">Cloud</option>
+    <option value="local">Local</option>
+  </select>
+  <input id="key" placeholder="Gemini API key (saved locally)" type="password">
+  <input id="local-url" list="url-presets" placeholder="http://127.0.0.1:5001/v1/chat/completions" style="display:none">
+  <datalist id="url-presets">
+    <option value="http://127.0.0.1:5001/v1/chat/completions">KoboldCpp (port 5001)</option>
+    <option value="http://127.0.0.1:8080/v1/chat/completions">llama.cpp (port 8080)</option>
+    <!-- <option value="http://127.0.0.1:11434/v1/chat/completions">Ollama (port 11434)</option>
+    <option value="http://127.0.0.1:1234/v1/chat/completions">LM Studio (port 1234)</option> -->
+  </datalist>
+  <select id="model">
+    <option value="gemini-3.8-flash">gemini-3.8-flash (latest)</option>
+    <option value="gemini-3.6-flash">gemini-3.6-flash</option>
+    <option value="gemini-3.5-flash">gemini-3.5-flash (fast lite)</option>
+    <option value="gemini-3.1-flash-lite" selected>gemini-3.1-flash-lite (lightweight)</option>
+  </select>
+  <label id="think-label" style="font-size:11px"><input type="checkbox" id="think"> think</label>
+  <button id="save" class="g">Save</button>
+  <button id="test" class="g">Test</button>
+  <button id="pip" class="g">Pin on top</button>
+</header>
+<div id="answer">Paste a question, screenshot, or click <b>Read clipboard</b>.</div>
+<div id="hist"></div>
+<textarea id="q" placeholder="Ctrl+V question text (or paste a screenshot).  Ctrl+Enter = ask.  Esc = clear."></textarea>
+<footer>
+  <button id="ask">Ask  (Ctrl+Enter)</button>
+  <button id="clip" class="g">Read clipboard</button>
+  <button id="clear" class="g">Clear</button>
+  <span id="meta">ready</span>
+</footer>
+<div id="pip-placeholder">
+  <div class="pip-title">Assistant is pinned on top</div>
+  <div>Running in Picture-in-Picture window.</div>
+  <button id="restore" class="g" style="padding:6px 14px;">Bring back to tab</button>
+</div>
+
+<script>
+let pipWin = null;
+const $ = s => {
+  if (pipWin && !pipWin.closed) {
+    const el = pipWin.document.querySelector(s);
+    if (el) return el;
+  }
+  return document.querySelector(s);
+};
+
+const SYS = `You are a fast, decisive exam assistant. Input is an exam question, as text or screenshot.
+RULES:
+- If multiple choice: output exactly two lines:
+  ANSWER: <the letter(s)>
+  WHY: <one short line, max 15 words>
+- Otherwise: give the final answer first, then one short line of reasoning, use easy wording.
+- Never hedge. If unsure, still commit to the single best option.
+- Total output under 100 words.`;
+let img = null;
+
+// Default config:
+const DEFAULT_API_KEY = 'AQ.Ab8RN6Jn0Vdsv8HSMscLbszULn7Y7Q3lW5JEtZbe1HwqaTz5Ww';
+const DEFAULT_LOCAL_URL = 'http://127.0.0.1:5001/v1/chat/completions';
+const isLocalDefaultFile = location.pathname.includes('local');
+const DEFAULT_SOURCE = isLocalDefaultFile ? 'local' : 'gemini';
+const fileSourceKey = 'ai_source_' + (isLocalDefaultFile ? 'local' : 'cloud');
+
+$('#source').value = localStorage.getItem(fileSourceKey) || localStorage.getItem('ai_source') || DEFAULT_SOURCE;
+$('#key').value = localStorage.getItem('gk') || DEFAULT_API_KEY;
+$('#local-url').value = localStorage.getItem('local_url') || DEFAULT_LOCAL_URL;
+
+let savedModel = localStorage.getItem('gm');
+// If previous cached model was deprecated, migrate to gemini-3.5-flash
+if (!savedModel || savedModel.includes('2.0') || savedModel.includes('1.5')) {
+  savedModel = 'gemini-3.5-flash';
+  localStorage.setItem('gm', savedModel);
+}
+if (savedModel) {
+  const exists = [...$('#model').options].some(o => o.value === savedModel);
+  if (!exists) {
+    const opt = document.createElement('option');
+    opt.value = savedModel;
+    opt.textContent = savedModel;
+    $('#model').appendChild(opt);
+  }
+  $('#model').value = savedModel;
+}
+
+function updateSourceUI() {
+  const isLocal = $('#source').value === 'local';
+  const updateDoc = (doc) => {
+    if (!doc) return;
+    const keyEl = doc.querySelector('#key');
+    const modelEl = doc.querySelector('#model');
+    const thinkLabel = doc.querySelector('#think-label');
+    const localUrlEl = doc.querySelector('#local-url');
+    const meta = doc.querySelector('#meta');
+    
+    if (keyEl) keyEl.style.display = isLocal ? 'none' : '';
+    if (modelEl) modelEl.style.display = isLocal ? 'none' : '';
+    if (thinkLabel) thinkLabel.style.display = isLocal ? 'none' : '';
+    if (localUrlEl) localUrlEl.style.display = isLocal ? '' : 'none';
+    if (meta && (meta.textContent === 'ready' || meta.textContent.includes('ready'))) {
+      meta.textContent = isLocal ? 'Local AI ready (port 5001)' : 'Gemini ready';
+    }
+  };
+
+  updateDoc(document);
+  if (pipWin && !pipWin.closed) {
+    updateDoc(pipWin.document);
+  }
+}
+
+$('#source').onchange = () => {
+  updateSourceUI();
+  localStorage.setItem(fileSourceKey, $('#source').value);
+  localStorage.setItem('ai_source', $('#source').value);
+};
+
+updateSourceUI();
+
+$('#save').onclick = () => {
+  localStorage.setItem(fileSourceKey, $('#source').value);
+  localStorage.setItem('ai_source', $('#source').value);
+  localStorage.setItem('gk', $('#key').value.trim());
+  localStorage.setItem('gm', $('#model').value);
+  localStorage.setItem('local_url', $('#local-url').value.trim());
+  $('#meta').textContent = 'saved';
+};
+
+$('#test').onclick = async () => {
+  const src = $('#source').value;
+  if (src === 'gemini') {
+    const k = $('#key').value.trim(); if (!k) return $('#meta').textContent = 'no key';
+    $('#meta').textContent = 'listing models…';
+    try {
+      const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models?key=' + k);
+      const j = await r.json();
+      if (j.error) throw new Error(j.error.message);
+      const list = j.models.filter(m => m.supportedGenerationMethods?.includes('generateContent'))
+                          .map(m => m.name.replace('models/',''));
+      $('#model').innerHTML = list.map(m => `<option>${m}</option>`).join('');
+      if ([...$('#model').options].some(o => o.value === savedModel)) {
+        $('#model').value = savedModel;
+      }
+      $('#meta').textContent = list.length + ' models — pick one, then Save';
+    } catch (e) { $('#meta').textContent = 'ERR: ' + e.message; }
+  } else {
+    const url = $('#local-url').value.trim() || DEFAULT_LOCAL_URL;
+    $('#meta').textContent = 'testing local AI…';
+    try {
+      const base = url.replace(/\/chat\/completions\/?$/, '');
+      let tested = false;
+      try {
+        const r = await fetch(base + '/models', { signal: AbortSignal.timeout(3000) });
+        if (r.ok) {
+          const j = await r.json();
+          const count = j.data?.length || 1;
+          $('#meta').textContent = `Local AI connected (${count} model loaded)`;
+          tested = true;
+        }
+      } catch (_) {}
+      if (!tested) {
+        const r = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: [{ role: 'user', content: 'test' }],
+            max_tokens: 5
+          }),
+          signal: AbortSignal.timeout(5000)
+        });
+        if (r.ok) {
+          $('#meta').textContent = 'Local AI connected & responsive!';
+        } else {
+          $('#meta').textContent = `Local AI HTTP ${r.status}: ${r.statusText}`;
+        }
+      }
+    } catch (e) {
+      $('#meta').textContent = 'ERR: Cannot connect to Local AI (' + e.message + ')';
+    }
+  }
+};
+
+let imgMime = 'image/png';
+
+/* paste text or screenshot */
+function handlePaste(e) {
+  const cd = e.clipboardData;
+  if (!cd) return;
+
+  const items = cd.items ? [...cd.items] : [];
+  for (const it of items) {
+    if (it.type.startsWith('image/')) {
+      const f = it.getAsFile();
+      if (!f) continue;
+      imgMime = f.type || 'image/png';
+      const r = new FileReader();
+      r.onload = () => {
+        img = r.result.split(',')[1];
+        $('#answer').innerHTML = '<i>screenshot attached — press Ctrl+Enter</i>';
+      };
+      r.readAsDataURL(f);
+      e.preventDefault();
+      return;
+    }
+  }
+
+  // Fallback for file paste
+  if (cd.files && cd.files.length > 0) {
+    for (const f of cd.files) {
+      if (f.type.startsWith('image/')) {
+        imgMime = f.type || 'image/png';
+        const r = new FileReader();
+        r.onload = () => {
+          img = r.result.split(',')[1];
+          $('#answer').innerHTML = '<i>screenshot attached — press Ctrl+Enter</i>';
+        };
+        r.readAsDataURL(f);
+        e.preventDefault();
+        return;
+      }
+    }
+  }
+}
+
+$('#q').addEventListener('paste', handlePaste);
+window.addEventListener('paste', handlePaste);
+
+$('#clip').onclick = async () => {
+  try {
+    const nav = (pipWin && !pipWin.closed && pipWin.navigator?.clipboard) ? pipWin.navigator : navigator;
+    // Check for image in clipboard first
+    if (nav.clipboard.read) {
+      try {
+        const items = await nav.clipboard.read();
+        for (const item of items) {
+          const imgType = item.types.find(t => t.startsWith('image/'));
+          if (imgType) {
+            const blob = await item.getType(imgType);
+            imgMime = blob.type || 'image/png';
+            const r = new FileReader();
+            r.onload = () => {
+              img = r.result.split(',')[1];
+              $('#answer').innerHTML = '<i>screenshot attached from clipboard — press Ctrl+Enter</i>';
+            };
+            r.readAsDataURL(blob);
+            return;
+          }
+        }
+      } catch (_) {}
+    }
+    // Fallback to text
+    const t = await nav.clipboard.readText();
+    if (t) $('#q').value = t;
+  } catch (e) {
+    $('#meta').textContent = 'clipboard denied — paste manually';
+  }
+};
+
+async function ask() {
+  const src = $('#source').value;
+  const q = $('#q').value.trim();
+  if (!q && !img) return $('#meta').textContent = 'empty';
+  $('#meta').textContent = 'thinking…';
+  const t0 = Date.now();
+
+  if (src === 'gemini') {
+    const key = $('#key').value.trim() || DEFAULT_API_KEY, model = $('#model').value || 'gemini-3.8-flash';
+    if (!key) return $('#meta').textContent = 'no API key';
+    const parts = [];
+    if (q) parts.push({ text: q });
+    if (img) parts.push({ inline_data: { mime_type: imgMime || 'image/png', data: img } });
+    try {
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: SYS }] },
+          contents: [{ role: 'user', parts }],
+          generationConfig: {
+            temperature: 0, maxOutputTokens: 700,
+            ...(('' + $('#think').checked) === 'true' ? {} : { thinkingConfig: { thinkingBudget: 0 } })
+          }
+        })
+      });
+      const j = await r.json();
+      if (j.error) throw new Error(j.error.message);
+      const txt = (j.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('').trim()
+                  || '(no answer)';
+      const html = txt.replace(/^ANSWER:\s*(.+)$/m, 'ANSWER: <b>$1</b>');
+      $('#answer').innerHTML = html;
+      $('#hist').innerHTML = `<div>${new Date().toLocaleTimeString()} [Gemini] · ${(txt.split('\n')[0]||'').slice(0,80)}</div>` + $('#hist').innerHTML;
+      $('#meta').textContent = ((Date.now() - t0) / 1000).toFixed(1) + 's';
+    } catch (e) { $('#meta').textContent = 'ERR: ' + e.message; }
+  } else {
+    const url = $('#local-url').value.trim() || DEFAULT_LOCAL_URL;
+    let userContent = q;
+    if (img) {
+      userContent = [
+        { type: 'text', text: q || 'Solve this question concisely according to the rules.' },
+        { type: 'image_url', image_url: { url: `data:${imgMime || 'image/png'};base64,${img}` } }
+      ];
+    }
+    try {
+      const r = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [
+            { role: 'system', content: SYS },
+            { role: 'user', content: userContent }
+          ],
+          temperature: 0,
+          max_tokens: 300,
+          stream: false
+        })
+      });
+      if (!r.ok) {
+        const errText = await r.text();
+        throw new Error(`HTTP ${r.status}: ${errText.slice(0, 100)}`);
+      }
+      const j = await r.json();
+      if (j.error) throw new Error(typeof j.error === 'string' ? j.error : (j.error.message || JSON.stringify(j.error)));
+      const txt = (j.choices?.[0]?.message?.content || '').trim() || '(no answer)';
+      const html = txt.replace(/^ANSWER:\s*(.+)$/m, 'ANSWER: <b>$1</b>');
+      $('#answer').innerHTML = html;
+      $('#hist').innerHTML = `<div>${new Date().toLocaleTimeString()} [Local] · ${(txt.split('\n')[0]||'').slice(0,80)}</div>` + $('#hist').innerHTML;
+      $('#meta').textContent = ((Date.now() - t0) / 1000).toFixed(1) + 's';
+    } catch (e) {
+      if (img && (e.message.includes('400') || e.message.toLowerCase().includes('vision') || e.message.toLowerCase().includes('image'))) {
+        $('#answer').innerHTML = '<b style="color:#ef4444">Local Model Notice:</b> Loaded local model might not support vision/screenshots. Please paste text directly or switch to Gemini.';
+      }
+      $('#meta').textContent = 'ERR: ' + e.message;
+    }
+  }
+  img = null;
+}
+
+$('#ask').onclick = ask;
+$('#clear').onclick = () => { $('#q').value = ''; img = null; $('#answer').textContent = 'cleared'; };
+
+function handleKeyDown(e) {
+  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); ask(); }
+  if (e.key === 'Escape') {
+    if (document.activeElement !== $('#key') && document.activeElement !== $('#local-url')) {
+      $('#q').value = '';
+      img = null;
+      $('#answer').textContent = 'cleared';
+    }
+  }
+}
+
+$('#q').addEventListener('keydown', handleKeyDown);
+window.addEventListener('keydown', handleKeyDown);
+
+/* Restore elements from PiP window */
+function restoreFromPip() {
+  if (!pipWin) return;
+  const header = $('header');
+  const answer = $('#answer');
+  const hist = $('#hist');
+  const q = $('#q');
+  const footer = $('footer');
+
+  const placeholder = document.getElementById('pip-placeholder');
+  if (placeholder) placeholder.classList.remove('active');
+
+  document.body.prepend(header, answer, hist, q, footer);
+  pipWin = null;
+  const pipBtn = $('#pip');
+  if (pipBtn) pipBtn.textContent = 'Pin on top';
+  updateSourceUI();
+}
+
+$('#restore').onclick = () => {
+  if (pipWin && !pipWin.closed) pipWin.close();
+  else restoreFromPip();
+};
+
+/* Document Picture-in-Picture: always-on-top window, floats over fullscreen */
+$('#pip').onclick = async () => {
+  if (pipWin && !pipWin.closed) {
+    pipWin.close();
+    return;
+  }
+  if (!('documentPictureInPicture' in window)) return $('#meta').textContent = 'PiP needs Chrome 116+';
+
+  try {
+    const w = await documentPictureInPicture.requestWindow({ width: 430, height: 620 });
+    pipWin = w;
+
+    document.querySelectorAll('style, link[rel="stylesheet"]').forEach(s => w.document.head.appendChild(s.cloneNode(true)));
+    w.document.title = 'Prepration (Pinned)';
+
+    const header = document.querySelector('header');
+    const answer = document.querySelector('#answer');
+    const hist = document.querySelector('#hist');
+    const q = document.querySelector('#q');
+    const footer = document.querySelector('footer');
+
+    w.document.body.append(header, answer, hist, q, footer);
+    updateSourceUI();
+
+    const placeholder = document.getElementById('pip-placeholder');
+    if (placeholder) placeholder.classList.add('active');
+
+    const pipBtn = $('#pip');
+    if (pipBtn) pipBtn.textContent = 'Unpin';
+
+    w.addEventListener('paste', handlePaste);
+    w.addEventListener('keydown', handleKeyDown);
+    w.addEventListener('pagehide', restoreFromPip);
+  } catch (err) {
+    $('#meta').textContent = 'PiP error: ' + err.message;
+  }
+};
+</script>
+</body>
+</html>

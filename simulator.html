@@ -1,193 +1,328 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Moodle Exam Portal Simulator</title>
-<style>
-:root{--brand:#0f6cbf;--ok:#2e7d32;--bad:#c62828;--warn:#ef6c00}
-*{box-sizing:border-box}
-body{margin:0;font:14px/1.5 "Segoe UI",Roboto,Arial,sans-serif;background:#f4f6f9;color:#212529}
-.wrap{max-width:940px;margin:0 auto;padding:16px}
-h1{font-size:20px;margin:8px 0 2px;color:var(--brand)}
-.sub{color:#6c757d;margin:0 0 14px;font-size:12px}
-.card{background:#fff;border:1px solid #dee2e6;border-radius:8px;padding:14px;margin-bottom:14px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
-.metric{background:#eef2f7;border-radius:6px;padding:8px;text-align:center}
-.metric b{display:block;font-size:11px;color:#6c757d;text-transform:uppercase}
-.metric span{font-size:18px;font-weight:700}
-.ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}.neu{color:#6c757d}
-.log{background:#1e1e1e;color:#a6e22e;font:12px/1.5 Consolas,monospace;padding:10px;
-     border-radius:6px;height:190px;overflow:auto}
-.log div{border-bottom:1px solid #2a2a2a;padding:1px 0}
-button{background:var(--brand);color:#fff;border:0;border-radius:4px;padding:9px 16px;font-size:14px;cursor:pointer}
-button.sec{background:#6c757d}
-table{width:100%;border-collapse:collapse;font-size:13px}
-td,th{border:1px solid #dee2e6;padding:6px 8px;text-align:left}
-th{background:#eef2f7}
-.q{margin-bottom:10px}.q b{color:#0f6cbf}
-code{background:#f1f3f5;padding:1px 4px;border-radius:3px}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Moodle Exam Portal Simulator</title>
+  <style>
+    :root {
+      --brand: #0f6cbf;
+      --ok: #2e7d32;
+      --bad: #c62828;
+      --warn: #ef6c00
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      font: 14px/1.5 "Segoe UI", Roboto, Arial, sans-serif;
+      background: #f4f6f9;
+      color: #212529
+    }
+
+    .wrap {
+      max-width: 940px;
+      margin: 0 auto;
+      padding: 16px
+    }
+
+    h1 {
+      font-size: 20px;
+      margin: 8px 0 2px;
+      color: var(--brand)
+    }
+
+    .sub {
+      color: #6c757d;
+      margin: 0 0 14px;
+      font-size: 12px
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 14px
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 8px
+    }
+
+    .metric {
+      background: #eef2f7;
+      border-radius: 6px;
+      padding: 8px;
+      text-align: center
+    }
+
+    .metric b {
+      display: block;
+      font-size: 11px;
+      color: #6c757d;
+      text-transform: uppercase
+    }
+
+    .metric span {
+      font-size: 18px;
+      font-weight: 700
+    }
+
+    .ok {
+      color: var(--ok)
+    }
+
+    .bad {
+      color: var(--bad)
+    }
+
+    .warn {
+      color: var(--warn)
+    }
+
+    .neu {
+      color: #6c757d
+    }
+
+    .log {
+      background: #1e1e1e;
+      color: #a6e22e;
+      font: 12px/1.5 Consolas, monospace;
+      padding: 10px;
+      border-radius: 6px;
+      height: 190px;
+      overflow: auto
+    }
+
+    .log div {
+      border-bottom: 1px solid #2a2a2a;
+      padding: 1px 0
+    }
+
+    button {
+      background: var(--brand);
+      color: #fff;
+      border: 0;
+      border-radius: 4px;
+      padding: 9px 16px;
+      font-size: 14px;
+      cursor: pointer
+    }
+
+    button.sec {
+      background: #6c757d
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px
+    }
+
+    td,
+    th {
+      border: 1px solid #dee2e6;
+      padding: 6px 8px;
+      text-align: left
+    }
+
+    th {
+      background: #eef2f7
+    }
+
+    .q {
+      margin-bottom: 10px
+    }
+
+    .q b {
+      color: #0f6cbf
+    }
+
+    code {
+      background: #f1f3f5;
+      padding: 1px 4px;
+      border-radius: 3px
+    }
+  </style>
 </head>
+
 <body>
-<div class="wrap">
-  <h1 id="hdr">Moodle Exam Portal Simulator</h1>
-  <p class="sub" id="sub">Loading…</p>
-  <div class="card" id="statusCard">
-    <div class="grid">
-      <div class="metric"><b>Portal</b><span id="m-portal" class="ok">SECURE</span></div>
-      <div class="metric"><b>Focus</b><span id="m-focus" class="ok">FOCUSED</span></div>
-      <div class="metric"><b>Visibility</b><span id="m-vis" class="ok">VISIBLE</span></div>
-      <div class="metric"><b>Fullscreen</b><span id="m-fs" class="neu">—</span></div>
-      <div class="metric"><b>DevTools</b><span id="m-dt" class="ok">CLOSED</span></div>
-      <div class="metric"><b>Flags</b><span id="m-flags" class="neu">0</span></div>
+  <div class="wrap">
+    <h1 id="hdr">Moodle Exam Portal Simulator</h1>
+    <p class="sub" id="sub">Loading…</p>
+    <div class="card" id="statusCard">
+      <div class="grid">
+        <div class="metric"><b>Portal</b><span id="m-portal" class="ok">SECURE</span></div>
+        <div class="metric"><b>Focus</b><span id="m-focus" class="ok">FOCUSED</span></div>
+        <div class="metric"><b>Visibility</b><span id="m-vis" class="ok">VISIBLE</span></div>
+        <div class="metric"><b>Fullscreen</b><span id="m-fs" class="neu">—</span></div>
+        <div class="metric"><b>DevTools</b><span id="m-dt" class="ok">CLOSED</span></div>
+        <div class="metric"><b>Flags</b><span id="m-flags" class="neu">0</span></div>
+      </div>
+    </div>
+    <div class="card" id="body-card"></div>
+    <div class="card">
+      <b>Live detection matrix</b>
+      <table>
+        <thead>
+          <tr>
+            <th>Vector</th>
+            <th>Moodle uses it?</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="matrix"></tbody>
+      </table>
+    </div>
+    <div class="card"><b>Event log</b>
+      <div class="log" id="log"></div>
     </div>
   </div>
-  <div class="card" id="body-card"></div>
-  <div class="card">
-    <b>Live detection matrix</b>
-    <table><thead><tr><th>Vector</th><th>Moodle uses it?</th><th>Status</th></tr></thead>
-    <tbody id="matrix"></tbody></table>
-  </div>
-  <div class="card"><b>Event log</b><div class="log" id="log"></div></div>
-</div>
 
-<script>
-(function () {
-  const P = new URLSearchParams(location.search);
-  const SECURE = P.has('secure');
-  const PATCHED = !!window.__antiDetect;
+  <script>
+    (function () {
+      const P = new URLSearchParams(location.search);
+      const SECURE = P.has('secure');
+      const PATCHED = !!window.__antiDetect;
 
-  let flags = 0;
-  const $ = id => document.getElementById(id);
-  const log = (t, m, sev) => {
-    const d = document.createElement('div');
-    const c = sev === 'critical' ? '#f92672' : sev === 'warn' ? '#fd971f' : '#a6e22e';
-    d.innerHTML = `<span style="color:#66d9ef">[${new Date().toLocaleTimeString()}]</span> ` +
-                  `<span style="color:${c};font-weight:700">[${t}]</span> ${m}`;
-    $('log').appendChild(d); $('log').scrollTop = 1e6;
-    if (sev === 'critical') { flags++; $('m-flags').textContent = flags; }
-  };
-  const matrix = (name, moodle, state) => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${name}</td><td>${moodle}</td><td class="${state==='BLOCKED'?'ok':'bad'}">${state}</td>`;
-    $('matrix').appendChild(tr);
-  };
+      let flags = 0;
+      const $ = id => document.getElementById(id);
+      const log = (t, m, sev) => {
+        const d = document.createElement('div');
+        const c = sev === 'critical' ? '#f92672' : sev === 'warn' ? '#fd971f' : '#a6e22e';
+        d.innerHTML = `<span style="color:#66d9ef">[${new Date().toLocaleTimeString()}]</span> ` +
+          `<span style="color:${c};font-weight:700">[${t}]</span> ${m}`;
+        $('log').appendChild(d); $('log').scrollTop = 1e6;
+        if (sev === 'critical') { flags++; $('m-flags').textContent = flags; }
+      };
+      const matrix = (name, moodle, state) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${name}</td><td>${moodle}</td><td class="${state === 'BLOCKED' ? 'ok' : 'bad'}">${state}</td>`;
+        $('matrix').appendChild(tr);
+      };
 
-  /* ============ LANDING (parent) ============ */
-  if (!SECURE) {
-    $('hdr').textContent = 'Course page — Quiz: Mid-Term Assessment';
-    $('sub').innerHTML = 'Simulates <code>lms.iub.edu.pk/mod/quiz/view.php</code>. ' +
-      'Patch active: <b class="' + (PATCHED ? 'ok">YES' : 'bad">NO') + '</b>';
-    $('statusCard').style.display = 'none';
-    $('body-card').innerHTML =
-      '<p>Attempts allowed: 1 · Time limit: 60 min · Browser security: ' +
-      '<b>Full screen pop-up with some JavaScript security</b></p>' +
-      '<button id="go">Attempt quiz now</button> ' +
-      '<button class="sec" id="plain">Open without popup</button>';
-    $('go').onclick = () => window.open(
-      location.pathname + '?secure=1', 'quizpopup',
-      'left=0,top=0,fullscreen=yes,scrollbars=yes,resizeable=no,directories=no,' +
-      'toolbar=no,titlebar=no,location=no,status=no,menubar=no');
-    $('plain').onclick = () => location.href = location.pathname + '?secure=1';
-    return;
-  }
+      /* ============ LANDING (parent) ============ */
+      if (!SECURE) {
+        $('hdr').textContent = 'Course page — Quiz: Mid-Term Assessment';
+        $('sub').innerHTML = 'Simulates <code>lms.iub.edu.pk/mod/quiz/view.php</code>. ' +
+          'Patch active: <b class="' + (PATCHED ? 'ok">YES' : 'bad">NO') + '</b>';
+        $('statusCard').style.display = 'none';
+        $('body-card').innerHTML =
+          '<p>Attempts allowed: 1 · Time limit: 60 min · Browser security: ' +
+          '<b>Full screen pop-up with some JavaScript security</b></p>' +
+          '<button id="go">Attempt quiz now</button> ' +
+          '<button class="sec" id="plain">Open without popup</button>';
+        $('go').onclick = () => window.open(
+          location.pathname + '?secure=1', 'quizpopup',
+          'left=0,top=0,fullscreen=yes,scrollbars=yes,resizeable=no,directories=no,' +
+          'toolbar=no,titlebar=no,location=no,status=no,menubar=no');
+        $('plain').onclick = () => location.href = location.pathname + '?secure=1';
+        return;
+      }
 
-  /* ============ SECURE ATTEMPT PAGE ============ */
-  document.body.classList.add('quiz-secure-window');
-  $('hdr').textContent = 'Quiz attempt — secure window';
-  $('sub').innerHTML = 'Patch active: <b class="' + (PATCHED ? 'ok">YES' : 'bad">NO') +
-    '</b> · window.opener: <b>' + (!!window.opener) + '</b>';
-  $('body-card').innerHTML =
-    '<p><b>Sample MCQs</b> (select text + Ctrl+C to test clipboard, then paste into your AI tool):</p>' +
-    '<div class="q"><b>1.</b> The process by which a firm divides a broad market into smaller ' +
-      'segments with distinct needs is called:<br>A) Positioning B) Market segmentation ' +
-      'C) Penetration D) Diversification</div>' +
-    '<div class="q"><b>2.</b> Which pricing strategy sets a high initial price for a new product?<br>' +
-      'A) Penetration pricing B) Skimming pricing C) Cost-plus D) Loss leader</div>' +
-    '<div class="q"><b>3.</b> In marketing, the "4 Ps" do NOT include:<br>' +
-      'A) Product B) Price C) People D) Promotion</div>' +
-    '<p id="copytext">Select this sentence to test text selection. Right-click to test the ' +
-      'context menu. Press Ctrl+C to test clipboard. Press F12 / Ctrl+Shift+I to test DevTools.</p>' +
-    '<button id="fsbtn">Enter fullscreen (Fullscreen API)</button> ' +
-    '<button class="sec" id="exitbtn">Exit fullscreen</button> ' +
-    '<button class="sec" id="closebtn">Close attempt</button>';
+      /* ============ SECURE ATTEMPT PAGE ============ */
+      document.body.classList.add('quiz-secure-window');
+      $('hdr').textContent = 'Quiz attempt — secure window';
+      $('sub').innerHTML = 'Patch active: <b class="' + (PATCHED ? 'ok">YES' : 'bad">NO') +
+        '</b> · window.opener: <b>' + (!!window.opener) + '</b>';
+      $('body-card').innerHTML =
+        '<p><b>Sample MCQs</b> (select text + Ctrl+C to test clipboard, then paste into your AI tool):</p>' +
+        '<div class="q"><b>1.</b> The process by which a firm divides a broad market into smaller ' +
+        'segments with distinct needs is called:<br>A) Positioning B) Market segmentation ' +
+        'C) Penetration D) Diversification</div>' +
+        '<div class="q"><b>2.</b> Which pricing strategy sets a high initial price for a new product?<br>' +
+        'A) Penetration pricing B) Skimming pricing C) Cost-plus D) Loss leader</div>' +
+        '<div class="q"><b>3.</b> In marketing, the "4 Ps" do NOT include:<br>' +
+        'A) Product B) Price C) People D) Promotion</div>' +
+        '<p id="copytext">Select this sentence to test text selection. Right-click to test the ' +
+        'context menu. Press Ctrl+C to test clipboard. Press F12 / Ctrl+Shift+I to test DevTools.</p>' +
+        '<button id="fsbtn">Enter fullscreen (Fullscreen API)</button> ' +
+        '<button class="sec" id="exitbtn">Exit fullscreen</button> ' +
+        '<button class="sec" id="closebtn">Close attempt</button>';
 
-  $('fsbtn').onclick = () => document.documentElement.requestFullscreen?.().catch(()=>{});
-  $('exitbtn').onclick = () => document.exitFullscreen?.();
-  $('closebtn').onclick = () => window.opener ? (window.opener.location.reload(), window.close())
-                                              : location.href = location.pathname;
+      $('fsbtn').onclick = () => document.documentElement.requestFullscreen?.().catch(() => { });
+      $('exitbtn').onclick = () => document.exitFullscreen?.();
+      $('closebtn').onclick = () => window.opener ? (window.opener.location.reload(), window.close())
+        : location.href = location.pathname;
 
-  /* ---- Moodle faithful: handlers on document, BUBBLE phase ---- */
-  const prevent = e => { alert('Function disabled by secure mode'); e.preventDefault(); e.stopPropagation(); };
-  ['contextmenu','dragstart','cut','copy','paste'].forEach(t =>
-    document.addEventListener(t, prevent, false));
-  document.addEventListener('selectstart', e => { e.preventDefault(); }, false);
-  const preventMouse = e => {
-    if (e.button === 0 && /^(INPUT|TEXTAREA|BUTTON|SELECT|LABEL|A)$/i.test(e.target.tagName)) return;
-    if (e.button === 0 && e.target.isContentEditable) return;
-    e.preventDefault(); e.stopPropagation();
-  };
-  document.body.addEventListener('mousedown', preventMouse, false);
-  document.body.addEventListener('mouseup',   preventMouse, false);
-  document.addEventListener('keypress', e => {
-    if (e.ctrlKey && [67,86,88].includes(e.keyCode)) prevent(e);
-  }, false);
+      /* ---- Moodle faithful: handlers on document, BUBBLE phase ---- */
+      const prevent = e => { alert('Function disabled by secure mode'); e.preventDefault(); e.stopPropagation(); };
+      ['contextmenu', 'dragstart', 'cut', 'copy', 'paste'].forEach(t =>
+        document.addEventListener(t, prevent, false));
+      document.addEventListener('selectstart', e => { e.preventDefault(); }, false);
+      const preventMouse = e => {
+        if (e.button === 0 && /^(INPUT|TEXTAREA|BUTTON|SELECT|LABEL|A)$/i.test(e.target.tagName)) return;
+        if (e.button === 0 && e.target.isContentEditable) return;
+        e.preventDefault(); e.stopPropagation();
+      };
+      document.body.addEventListener('mousedown', preventMouse, false);
+      document.body.addEventListener('mouseup', preventMouse, false);
+      document.addEventListener('keypress', e => {
+        if (e.ctrlKey && [67, 86, 88].includes(e.keyCode)) prevent(e);
+      }, false);
 
-  /* ---- Instructor-added extras ---- */
-  window.addEventListener('blur',  () => { $('m-focus').textContent='UNFOCUSED'; $('m-focus').className='bad';
-    $('m-portal').textContent='UNFOCUSED'; $('m-portal').className='bad';
-    log('WINDOW_BLUR','Focus lost.','critical'); });
-  window.addEventListener('focus', () => { $('m-focus').textContent='FOCUSED'; $('m-focus').className='ok';
-    $('m-portal').textContent='SECURE'; $('m-portal').className='ok';
-    log('WINDOW_FOCUS','Focus restored.'); });
-  document.addEventListener('visibilitychange', () => {
-    const hid = document.hidden;
-    $('m-vis').textContent = hid ? 'HIDDEN' : 'VISIBLE';
-    $('m-vis').className = hid ? 'bad' : 'ok';
-    log('VISIBILITY_CHANGE', 'hidden=' + hid, hid ? 'critical' : '');
-  });
-  document.addEventListener('fullscreenchange', () => {
-    const on = !!document.fullscreenElement;
-    $('m-fs').textContent = on ? 'ON' : 'OFF';
-    $('m-fs').className = on ? 'ok' : 'bad';
-    log(on ? 'FULLSCREEN' : 'FULLSCREEN_VIOLATION',
-        on ? 'Entered.' : 'You exited fullscreen!', on ? '' : 'critical');
-  });
-  document.addEventListener('keydown', e => {
-    const k = e.key;
-    if (k === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(k.toUpperCase()))
-        || (e.ctrlKey && ['U','S','P'].includes(k.toUpperCase()))) {
-      e.preventDefault(); log('KEY_HOOK', k + ' blocked.', 'critical');
-    }
-  });
+      /* ---- Instructor-added extras ---- */
+      window.addEventListener('blur', () => {
+        $('m-focus').textContent = 'UNFOCUSED'; $('m-focus').className = 'bad';
+        $('m-portal').textContent = 'UNFOCUSED'; $('m-portal').className = 'bad';
+        log('WINDOW_BLUR', 'Focus lost.', 'critical');
+      });
+      window.addEventListener('focus', () => {
+        $('m-focus').textContent = 'FOCUSED'; $('m-focus').className = 'ok';
+        $('m-portal').textContent = 'SECURE'; $('m-portal').className = 'ok';
+        log('WINDOW_FOCUS', 'Focus restored.');
+      });
+      document.addEventListener('visibilitychange', () => {
+        const hid = document.hidden;
+        $('m-vis').textContent = hid ? 'HIDDEN' : 'VISIBLE';
+        $('m-vis').className = hid ? 'bad' : 'ok';
+        log('VISIBILITY_CHANGE', 'hidden=' + hid, hid ? 'critical' : '');
+      });
+      document.addEventListener('fullscreenchange', () => {
+        const on = !!document.fullscreenElement;
+        $('m-fs').textContent = on ? 'ON' : 'OFF';
+        $('m-fs').className = on ? 'ok' : 'bad';
+        log(on ? 'FULLSCREEN' : 'FULLSCREEN_VIOLATION',
+          on ? 'Entered.' : 'You exited fullscreen!', on ? '' : 'critical');
+      });
+      document.addEventListener('keydown', e => {
+        const k = e.key;
+        if (k === 'F12' || (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(k.toUpperCase()))
+          || (e.ctrlKey && ['U', 'S', 'P'].includes(k.toUpperCase()))) {
+          e.preventDefault(); log('KEY_HOOK', k + ' blocked.', 'critical');
+        }
+      });
 
-  /* ---- DevTools heuristic + matrix ---- */
-  setInterval(() => {
-    const open = (window.outerWidth - window.innerWidth) > 160;
-    $('m-dt').textContent = open ? 'OPEN' : 'CLOSED';
-    $('m-dt').className = open ? 'bad' : 'ok';
-  }, 700);
+      /* ---- DevTools heuristic + matrix ---- */
+      $('statusCard').insertAdjacentHTML('beforeend',
+        '<button class="sec" id="reset" style="margin-top:8px">Reset flags</button>');
+      $('reset').onclick = () => { flags = 0; $('m-flags').textContent = '0'; $('log').innerHTML = ''; };
 
-  const M = [
-    ['contextmenu / right-click', 'YES', 'BLOCKED'],
-    ['copy / cut / paste events', 'YES', 'BLOCKED'],
-    ['selectstart (text select)', 'YES', 'BLOCKED'],
-    ['mousedown / mouseup',       'YES', 'BLOCKED'],
-    ['Ctrl+C / V / X keypress',   'YES', 'BLOCKED'],
-    ['blur / focus',              'no*',  'BLOCKED'],
-    ['visibilitychange',          'no*',  'BLOCKED'],
-    ['Fullscreen API',            'no*',  'BLOCKED'],
-    ['F12 / Ctrl+Shift+I',        'no*',  'BLOCKED'],
-    ['window size vs screen',     'no*',  'BLOCKED']
-  ];
-  M.forEach(([n,m,s]) => matrix(n, m, s));
-  $('matrix').insertAdjacentHTML('afterend',
-    '<p class="sub">* = only if an instructor added extra JS. <b>BLOCKED</b> means the patch ' +
-    'neutralised it. If patch is OFF you should see alert popups and "critical" flags.</p>');
+      setInterval(() => {
+        const patched = !!window.__antiDetect;
+        $('sub').innerHTML = 'Patch active: <b class="' + (patched ? 'ok">YES' : 'bad">NO') +
+          '</b> · window.opener: <b>' + (!!window.opener) + '</b>';
+        $('m-dt').textContent = ((window.outerWidth - window.innerWidth) > 160) ? 'OPEN' : 'CLOSED';
+        $('m-dt').className = ((window.outerWidth - window.innerWidth) > 160) ? 'bad' : 'ok';
+        if (patched) {   // trust real state, not events
+          $('m-fs').textContent = document.fullscreenElement ? 'ON' : 'OFF';
+          $('m-fs').className = document.fullscreenElement ? 'ok' : 'neu';
+          $('m-focus').textContent = document.hasFocus() ? 'FOCUSED' : 'UNFOCUSED';
+          $('m-focus').className = document.hasFocus() ? 'ok' : 'bad';
+          $('m-vis').textContent = document.hidden ? 'HIDDEN' : 'VISIBLE';
+          $('m-vis').className = document.hidden ? 'bad' : 'ok';
+        }
+      }, 500);
 
-  log('SYSTEM','Secure window initialised. Patch ' + (PATCHED ? 'ACTIVE' : 'INACTIVE') + '.');
-})();
-</script>
+    })();
+  </script>
 </body>
+
 </html>

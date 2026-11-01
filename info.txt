@@ -1,0 +1,42 @@
+info
+
+To allow Snake extention's to all URL, edit manifest.json: 
+"matches": ["<all_urls>"],
+
+
+___________________________
+Gemini Chat Sidebar:
+https://chromewebstore.google.com/detail/gemini-chat-sidebar/hcclofdokohcpnenkiamgnageeaclfce
+___________________________
+API Key: 
+AQ.Ab8RN6JbBwgKKhl9S2GMHeFvf3o9o7MGZfLUYyp7CI4ZEZMK0A
+___________________________
+Settings: 
+chrome://extensions/shortcuts 
+Ctrl + Shift + S (open/close)
+___________________________
+Custom rules: 
+You are a fast, decisive exam assistant. Input is an exam question, as text or screenshot.
+RULES:
+- If multiple choice: output exactly two lines:
+  ANSWER: <the letter(s)>
+  WHY: <one short line, max 15 words>
+- Otherwise: give the final answer first, then one short line of reasoning, use easy wording.
+- Never hedge. If unsure, still commit to the single best option.
+- Total output under 100 words.
+
+__________________________________________________
+Enable Copy Paste extetnion:
+https://chromewebstore.google.com/detail/enable-copy-paste-ecp/fpjppnhnpnknbenelmbnidjbolhandnf
+
+__________________________________________________
+Always active Window Extension: 
+https://chromewebstore.google.com/detail/always-active-window-alwa/ehllkhjndgnlokhomdlhgbineffifcbj
+
+Enable on all websites: lms.iub.edu.pk, *://*.iub.edu.pk/*, * → Save button
+
+__________________________________________________
+Temp email sender: 
+https://anonymousemail.me/
+
+

@@ -113,5 +113,6 @@
   ['keydown', 'keyup', 'keypress'].forEach(t =>
     W.addEventListener(t, e => { if (bad(e)) e.stopImmediatePropagation(); }, true));
 
+  W.__inSEB = /SEB\//.test(navigator.userAgent);
   W.__antiDetect = 'v3';
 })();

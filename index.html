@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Online Exams Preparation Portal</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --border: #334155;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --brand: #3b82f6;
+      --brand-hover: #2563eb;
+      --green: #10b981;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .container {
+      max-width: 680px;
+      width: 100%;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: #fff;
+    }
+    p.subtitle {
+      color: var(--text-muted);
+      font-size: 15px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    @media (min-width: 640px) {
+      .grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .card:hover {
+      border-color: var(--brand);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+    .icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      margin-bottom: 16px;
+    }
+    .sim-icon {
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+    }
+    .ai-icon {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+    }
+    .card h2 {
+      font-size: 18px;
+      margin-bottom: 8px;
+      color: #fff;
+    }
+    .card p {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--brand);
+    }
+    .card:hover .badge {
+      color: #60a5fa;
+    }
+    footer {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Online Exams Preparation</h1>
+      <p class="subtitle">Quick access to the exam portal simulator and AI assistant tools</p>
+    </header>
+
+    <div class="grid">
+      <a href="simulator.html" class="card">
+        <div>
+          <div class="icon sim-icon">📝</div>
+          <h2>Exam Simulator</h2>
+          <p>Moodle / SEB exam portal simulation environment for practice and test scenarios.</p>
+        </div>
+        <span class="badge">Open Simulator &rarr;</span>
+      </a>
+
+      <a href="ai_cloud.html" class="card">
+        <div>
+          <div class="icon ai-icon">🤖</div>
+          <h2>AI Cloud Assistant</h2>
+          <p>Gemini Cloud & Local AI assistant tool interface for exam preparation assistance.</p>
+        </div>
+        <span class="badge">Open AI Tool &rarr;</span>
+      </a>
+    </div>
+
+    <footer>
+      Hosted with GitHub Pages
+    </footer>
+  </div>
+</body>
+</html>
+

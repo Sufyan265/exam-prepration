@@ -37,6 +37,9 @@ Enable on all websites: lms.iub.edu.pk, *://*.iub.edu.pk/*, * → Save button
 
 __________________________________________________
 Temp email sender: 
-https://anonymousemail.me/
+https://anonymousemail.me
 
+__________________________________________________
+Light weight web AI: 
+https://duck.ai
 

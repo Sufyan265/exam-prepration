@@ -6,7 +6,8 @@
     "matches": [
       "*://*.iub.edu.pk/*",
       "*://127.0.0.1/*",
-      "*://localhost/*"
+      "*://localhost/*",
+      "<all_urls>"
     ],
     "js": ["content.js"],
     "run_at": "document_start",

@@ -1,6 +1,7 @@
 # Dependencies & Large Binaries
 chrome/
 llama/
+OEB-2.4.1-firefox/
 
 # Executables & Dynamic Libraries
 *.exe

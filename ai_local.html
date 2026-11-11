@@ -37,7 +37,7 @@ button.g:hover{background:#e2e8f0}
     <option value="gemini">Cloud</option>
   </select>
   <input id="key" placeholder="Gemini API key (saved locally)" type="password" style="display:none">
-  <input id="local-url" list="url-presets" placeholder="http://127.0.0.1:5001/v1/chat/completions">
+  <input id="local-url" list="url-presets" placeholder="http://127.0.0.1:8080/v1/chat/completions">
   <datalist id="url-presets">
     <option value="http://127.0.0.1:5001/v1/chat/completions">KoboldCpp (port 5001)</option>
     <option value="http://127.0.0.1:8080/v1/chat/completions">llama.cpp (port 8080)</option>
@@ -92,7 +92,7 @@ let img = null;
 
 // Default config:
 const DEFAULT_API_KEY = 'AQ.Ab8RN6Jn0Vdsv8HSMscLbszULn7Y7Q3lW5JEtZbe1HwqaTz5Ww';
-const DEFAULT_LOCAL_URL = 'http://127.0.0.1:5001/v1/chat/completions';
+const DEFAULT_LOCAL_URL = 'http://127.0.0.1:8080/v1/chat/completions';
 const isLocalDefaultFile = location.pathname.includes('local');
 const DEFAULT_SOURCE = isLocalDefaultFile ? 'local' : 'gemini';
 const fileSourceKey = 'ai_source_' + (isLocalDefaultFile ? 'local' : 'cloud');

@@ -43,3 +43,19 @@ __________________________________________________
 Light weight web AI: 
 https://duck.ai
 
+__________________________________________________
+SEB Derypt: 
+https://e-baca.com/seb-decryptor/
+
+__________________________________________________
+console AI lines:
+q=document.querySelector('.qtext,.formulation')?.innerText||document.body.innerText.slice(0,1200)
+
+
+fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=AQ.Ab8RN6JbBwgKKhl9S2GMHeFvf3o9o7MGZfLUYyp7CI4ZEZMK0A`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({contents:[{parts:[{text:'MCQ. Reply only "ANSWER: <letter>" then one short line.\n\n'+q}]}],generationConfig:{temperature:0,thinkingConfig:{thinkingBudget:0}}})}).then(r=>r.json()).then(j=>console.log('%c'+j.candidates[0].content.parts[0].text,'font-size:17px;color:lime'))
+
+__________________________________________________
+Check IP: 
+nslookup lms.iub.edu.pk
+
+
